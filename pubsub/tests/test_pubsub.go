@@ -14,12 +14,12 @@ import (
 	"testing"
 	"time"
 
-	internalSubscriber "github.com/ThreeDotsLabs/watermill/internal/subscriber"
+	internalSubscriber "github.com/blastbao/watermill/internal/subscriber"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/internal"
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/subscriber"
+	"github.com/blastbao/watermill"
+	"github.com/blastbao/watermill/internal"
+	"github.com/blastbao/watermill/message"
+	"github.com/blastbao/watermill/message/subscriber"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -121,7 +121,7 @@ type Features struct {
 	RequireSingleInstance bool
 
 	// NewSubscriberReceivesOldMessages should be set to true if messages are persisted even
-    // if they are already consumed (for example, like in Kafka).
+	// if they are already consumed (for example, like in Kafka).
 	NewSubscriberReceivesOldMessages bool
 }
 

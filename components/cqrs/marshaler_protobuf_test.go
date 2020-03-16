@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/components/cqrs"
+	"github.com/blastbao/watermill"
+	"github.com/blastbao/watermill/components/cqrs"
 
 	"github.com/golang/protobuf/ptypes"
 

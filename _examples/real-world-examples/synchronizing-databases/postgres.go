@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill-sql/pkg/sql"
-	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/blastbao/watermill/message"
 )
 
 type postgresUser struct {

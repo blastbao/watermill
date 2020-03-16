@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/blastbao/watermill/message"
 )
 
 // CommandBus transports commands to command handlers.

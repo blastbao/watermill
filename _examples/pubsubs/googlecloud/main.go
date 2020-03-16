@@ -6,9 +6,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill"
+	"github.com/blastbao/watermill"
 	"github.com/ThreeDotsLabs/watermill-googlecloud/pkg/googlecloud"
-	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/blastbao/watermill/message"
 )
 
 func main() {

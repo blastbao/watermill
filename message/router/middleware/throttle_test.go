@@ -7,8 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
+	"github.com/blastbao/watermill/message"
+	"github.com/blastbao/watermill/message/router/middleware"
 	"github.com/stretchr/testify/assert"
 )
 

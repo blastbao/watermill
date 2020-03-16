@@ -3,7 +3,7 @@ package publisher
 import (
 	"strings"
 
-	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/blastbao/watermill/message"
 )
 
 type ErrCouldNotPublish struct {

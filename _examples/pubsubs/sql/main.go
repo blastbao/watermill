@@ -9,9 +9,9 @@ import (
 
 	driver "github.com/go-sql-driver/mysql"
 
-	"github.com/ThreeDotsLabs/watermill"
+	"github.com/blastbao/watermill"
 	"github.com/ThreeDotsLabs/watermill-sql/pkg/sql"
-	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/blastbao/watermill/message"
 )
 
 func main() {

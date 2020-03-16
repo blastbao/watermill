@@ -5,8 +5,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/blastbao/watermill"
+	"github.com/blastbao/watermill/message"
 )
 
 // EventHandler receives events defined by NewEvent and handles them with its Handle method.

@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ThreeDotsLabs/watermill"
+	"github.com/blastbao/watermill"
 )
 
 func TestLogFields_Copy(t *testing.T) {

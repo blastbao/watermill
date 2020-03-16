@@ -1,4 +1,4 @@
-module github.com/ThreeDotsLabs/watermill/docs/content/docs/snippets/tail-log-file
+module github.com/blastbao/watermill/docs/content/docs/snippets/tail-log-file
 
 go 1.12
 

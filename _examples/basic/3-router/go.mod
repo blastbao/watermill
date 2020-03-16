@@ -1,5 +1,3 @@
-module main.go
+module github.com/blastbao/watermill/_examples/basic/3-router
 
-require github.com/ThreeDotsLabs/watermill v1.0.1-0.20191022063524-9ce413590da0
-
-go 1.11
+go 1.12

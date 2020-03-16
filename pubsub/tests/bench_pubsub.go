@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/subscriber"
+	"github.com/blastbao/watermill/message"
+	"github.com/blastbao/watermill/message/subscriber"
 )
 
 type BenchmarkPubSubConstructor func(n int) (message.Publisher, message.Subscriber)

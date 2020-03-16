@@ -1,4 +1,4 @@
-module github.com/ThreeDotsLabs/watermill
+module github.com/blastbao/watermill
 
 require (
 	github.com/cenkalti/backoff/v3 v3.0.0

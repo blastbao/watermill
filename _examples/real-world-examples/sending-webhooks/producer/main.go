@@ -5,9 +5,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill"
+	"github.com/blastbao/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
-	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/blastbao/watermill/message"
 )
 
 var (

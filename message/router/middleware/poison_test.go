@@ -2,17 +2,18 @@ package middleware_test
 
 import (
 	"context"
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message/subscriber"
-	"github.com/ThreeDotsLabs/watermill/pubsub/gochannel"
 	"testing"
 	"time"
 
+	"github.com/blastbao/watermill"
+	"github.com/blastbao/watermill/message/subscriber"
+	"github.com/blastbao/watermill/pubsub/gochannel"
+
 	"github.com/hashicorp/go-multierror"
 
-	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/blastbao/watermill/message"
 
-	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
+	"github.com/blastbao/watermill/message/router/middleware"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

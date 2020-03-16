@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/ThreeDotsLabs/watermill-io/pkg/io"
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
+	"github.com/blastbao/watermill/message"
+	"github.com/blastbao/watermill/message/router/plugin"
 )
 
 // producer is initialized by parent command to the pub/sub provider of choice.

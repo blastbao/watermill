@@ -1,4 +1,4 @@
-module github.com/ThreeDotsLabs/watermill/tools/mill
+module github.com/blastbao/watermill/tools/mill
 
 require (
 	cloud.google.com/go v0.38.0

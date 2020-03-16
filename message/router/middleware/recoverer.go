@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/blastbao/watermill/message"
 	multierror "github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 )

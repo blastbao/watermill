@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/blastbao/watermill"
+	"github.com/blastbao/watermill/message"
 )
 
 type namedMockPublisher struct{}

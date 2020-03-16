@@ -8,11 +8,12 @@ import (
 
 	"github.com/lithammer/shortuuid/v3"
 
-	"github.com/ThreeDotsLabs/watermill"
-	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/blastbao/watermill"
+	"github.com/blastbao/watermill/message"
 )
 
 type Config struct {
+	// Output channel buffer size.
 	// Output channel buffer size.
 	OutputChannelBuffer int64
 
