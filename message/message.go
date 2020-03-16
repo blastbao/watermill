@@ -15,6 +15,7 @@ func init() {
 type Payload []byte
 
 type Message struct {
+
 	// UUID is an unique identifier of message.
 	//
 	// It is only used by Watermill for debugging.
@@ -34,6 +35,7 @@ type Message struct {
 
 	// ack is closed, when acknowledge is received.
 	ack chan struct{}
+
 	// noACk is closed, when negative acknowledge is received.
 	noAck chan struct{}
 
@@ -61,34 +63,47 @@ const (
 	nack
 )
 
-// Equals compare, that two messages are equal. Acks/Nacks are not compared.
+// Equals compare, that two messages are equal.
+// Acks/Nacks are not compared.
 func (m *Message) Equals(toCompare *Message) bool {
+
+	// 1. uuid
 	if m.UUID != toCompare.UUID {
 		return false
 	}
+
+	// 2. meta data
 	if len(m.Metadata) != len(toCompare.Metadata) {
 		return false
 	}
+
 	for key, value := range m.Metadata {
 		if value != toCompare.Metadata[key] {
 			return false
 		}
 	}
+
+	// 3. pay load
 	return bytes.Equal(m.Payload, toCompare.Payload)
 }
+
 
 // Ack sends message's acknowledgement.
 //
 // Ack is not blocking.
 // Ack is idempotent.
+//
 // False is returned, if Nack is already sent.
 func (m *Message) Ack() bool {
+
 	m.ackMutex.Lock()
 	defer m.ackMutex.Unlock()
+
 
 	if m.ackSentType == nack {
 		return false
 	}
+
 	if m.ackSentType != noAckSent {
 		return true
 	}
@@ -108,18 +123,26 @@ func (m *Message) Ack() bool {
 // Nack is not blocking.
 // Nack is idempotent.
 // False is returned, if Ack is already sent.
+//
+//
 func (m *Message) Nack() bool {
+
 	m.ackMutex.Lock()
 	defer m.ackMutex.Unlock()
+
 
 	if m.ackSentType == ack {
 		return false
 	}
+
+
 	if m.ackSentType != noAckSent {
 		return true
 	}
 
+
 	m.ackSentType = nack
+
 
 	if m.noAck == nil {
 		m.noAck = closedchan
@@ -127,8 +150,11 @@ func (m *Message) Nack() bool {
 		close(m.noAck)
 	}
 
+
 	return true
 }
+
+
 
 // Acked returns channel which is closed when acknowledgement is sent.
 //
@@ -139,6 +165,9 @@ func (m *Message) Nack() bool {
 //		case <-message.Nacked():
 //			// nack received
 //		}
+//
+//
+//
 func (m *Message) Acked() <-chan struct{} {
 	return m.ack
 }
@@ -156,15 +185,15 @@ func (m *Message) Nacked() <-chan struct{} {
 	return m.noAck
 }
 
-// Context returns the message's context. To change the context, use
-// SetContext.
+// Context returns the message's context. To change the context, use SetContext.
 //
-// The returned context is always non-nil; it defaults to the
-// background context.
+// The returned context is always non-nil; it defaults to the background context.
 func (m *Message) Context() context.Context {
+
 	if m.ctx != nil {
 		return m.ctx
 	}
+
 	return context.Background()
 }
 
@@ -174,11 +203,18 @@ func (m *Message) SetContext(ctx context.Context) {
 }
 
 // Copy copies all message without Acks/Nacks.
+//
 // The context is not propagated to the copy.
+//
 func (m *Message) Copy() *Message {
+
+	// uuid and payload
 	msg := NewMessage(m.UUID, m.Payload)
+
+	// metadata
 	for k, v := range m.Metadata {
 		msg.Metadata.Set(k, v)
 	}
+
 	return msg
 }

@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+
 	pubSub := gochannel.NewGoChannel(
 		gochannel.Config{},
 		watermill.NewStdLogger(false, false),
@@ -24,17 +25,16 @@ func main() {
 
 	go process(messages)
 
+	// build and publish messages at regular intervals
 	publishMessages(pubSub)
 }
 
 func publishMessages(publisher message.Publisher) {
 	for {
 		msg := message.NewMessage(watermill.NewUUID(), []byte("Hello, world!"))
-
 		if err := publisher.Publish("example.topic", msg); err != nil {
 			panic(err)
 		}
-
 		time.Sleep(time.Second)
 	}
 }

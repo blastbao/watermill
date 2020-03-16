@@ -4,7 +4,14 @@ import (
 	"context"
 )
 
+
+
+
+
+
+
 type Publisher interface {
+
 	// Publish publishes provided messages to given topic.
 	//
 	// Publish can be synchronous or asynchronous - it depends on the implementation.
@@ -14,11 +21,15 @@ type Publisher interface {
 	//
 	// Publish must be thread safe.
 	Publish(topic string, messages ...*Message) error
+
 	// Close should flush unsent messages, if publisher is async.
 	Close() error
 }
 
+
+
 type Subscriber interface {
+
 	// Subscribe returns output channel with messages from provided topic.
 	// Channel is closed, when Close() was called on the subscriber.
 	//
@@ -29,9 +40,14 @@ type Subscriber interface {
 	// Provided ctx is set to all produced messages.
 	// When Nack or Ack is called on the message, context of the message is canceled.
 	Subscribe(ctx context.Context, topic string) (<-chan *Message, error)
+
+
 	// Close closes all subscriptions with their output channels and flush offsets etc. when needed.
 	Close() error
 }
+
+
+
 
 type SubscribeInitializer interface {
 	// SubscribeInitialize can be called to initialize subscribe before consume.
@@ -43,3 +59,5 @@ type SubscribeInitializer interface {
 	// Implementing SubscribeInitialize is not obligatory.
 	SubscribeInitialize(topic string) error
 }
+
+

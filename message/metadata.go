@@ -7,7 +7,6 @@ func (m Metadata) Get(key string) string {
 	if v, ok := m[key]; ok {
 		return v
 	}
-
 	return ""
 }
 
