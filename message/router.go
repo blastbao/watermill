@@ -31,13 +31,23 @@ var (
 // (because msg.Ack() was sent in HandlerFunc or Subscriber supports multiple consumers).
 type HandlerFunc func(msg *Message) ([]*Message, error)
 
+
+
+
+
 // NoPublishHandlerFunc is HandlerFunc alternative, which doesn't produce any messages.
 type NoPublishHandlerFunc func(msg *Message) error
+
+
+
+
 
 // PassthroughHandler is a handler that passes the message unchanged from the subscriber to the publisher.
 var PassthroughHandler HandlerFunc = func(msg *Message) ([]*Message, error) {
 	return []*Message{msg}, nil
 }
+
+
 
 // HandlerMiddleware allows us to write something like decorators to HandlerFunc.
 // It can execute something before handler (for example: modify consumed message)
