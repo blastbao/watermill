@@ -104,7 +104,6 @@ func (g *GoChannel) Publish(topic string, messages ...*message.Message) error {
 	subLock.(*sync.Mutex).Lock()
 	defer subLock.(*sync.Mutex).Unlock()
 
-
 	// persist messages in memory queue, persistedMessages[topic] => [messages...]
 	if g.config.Persistent {
 		g.persistedMessagesLock.Lock()
@@ -147,7 +146,6 @@ func (g *GoChannel) waitForAckFromSubscribers(msg *message.Message, ackedByConsu
 	}
 }
 
-
 // start a backend goroutine sending msg to all subscribers of topic,
 // return a channel which will be closed when push are finished, so caller could waiting for
 // the close signal of channel to know when the send are finished.
@@ -168,12 +166,15 @@ func (g *GoChannel) sendMessage(topic string, message *message.Message) (<-chan 
 
 	// start a backend goroutine sending msg to each subscriber
 	go func(subscribers []*subscriber) {
+
 		for i := range subscribers {
 			subscriber := subscribers[i]
 			subscriber.sendMessageToSubscriber(message, logFields)
 		}
+
 		// when sending finished, close the result channel to notify caller
 		close(ackedBySubscribers)
+
 	}(subscribers)
 
 	return ackedBySubscribers, nil
@@ -192,12 +193,10 @@ func (g *GoChannel) Subscribe(ctx context.Context, topic string) (<-chan *messag
 	g.subscribersWg.Add(1)
 	g.closedLock.Unlock()
 
-
 	g.subscribersLock.Lock()
 
 	subLock, _ := g.subscribersByTopicLock.LoadOrStore(topic, &sync.Mutex{})
 	subLock.(*sync.Mutex).Lock()
-
 
 	s := &subscriber{
 		ctx:           ctx,
@@ -206,7 +205,6 @@ func (g *GoChannel) Subscribe(ctx context.Context, topic string) (<-chan *messag
 		logger:        g.logger,
 		closing:       make(chan struct{}),
 	}
-
 
 	go func(s *subscriber, g *GoChannel) {
 		select {
@@ -229,8 +227,6 @@ func (g *GoChannel) Subscribe(ctx context.Context, topic string) (<-chan *messag
 		g.subscribersWg.Done()
 	}(s, g)
 
-
-
 	if !g.config.Persistent {
 		defer g.subscribersLock.Unlock()
 		defer subLock.(*sync.Mutex).Unlock()
@@ -239,7 +235,6 @@ func (g *GoChannel) Subscribe(ctx context.Context, topic string) (<-chan *messag
 
 		return s.outputChannel, nil
 	}
-
 
 	go func(s *subscriber) {
 		defer g.subscribersLock.Unlock()
@@ -321,10 +316,6 @@ func (g *GoChannel) Close() error {
 
 	return nil
 }
-
-
-
-
 
 type subscriber struct {
 	ctx context.Context

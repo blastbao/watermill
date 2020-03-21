@@ -41,6 +41,7 @@ type messageTransformSubscriberDecorator struct {
 }
 
 func (t *messageTransformSubscriberDecorator) Subscribe(ctx context.Context, topic string) (<-chan *Message, error) {
+
 	in, err := t.sub.Subscribe(ctx, topic)
 	if err != nil {
 		return nil, err
@@ -48,6 +49,7 @@ func (t *messageTransformSubscriberDecorator) Subscribe(ctx context.Context, top
 
 	out := make(chan *Message)
 	t.subscribeWg.Add(1)
+
 	go func() {
 		for msg := range in {
 			t.transform(msg)

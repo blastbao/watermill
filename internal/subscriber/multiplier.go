@@ -26,7 +26,9 @@ func NewMultiplier(constructor Constructor, subscribersCount int) message.Subscr
 	}
 }
 
+// [important]
 func (s *multiplier) Subscribe(ctx context.Context, topic string) (msgs <-chan *message.Message, err error) {
+
 	defer func() {
 		if err != nil {
 			if closeErr := s.Close(); closeErr != nil {
@@ -40,19 +42,25 @@ func (s *multiplier) Subscribe(ctx context.Context, topic string) (msgs <-chan *
 	subWg := sync.WaitGroup{}
 	subWg.Add(s.subscribersCount)
 
+	// for loop => create some subscribers of topic and transfer the message to channel out
 	for i := 0; i < s.subscribersCount; i++ {
+
+		// make a subscriber
 		sub, err := s.subscriberConstructor()
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot create subscriber")
 		}
 
+		// save the subscriber
 		s.subscribers = append(s.subscribers, sub)
 
+		// call subscriber.Subscribe(topic) to get a message channel for receiving messages of topic.
 		msgs, err := sub.Subscribe(ctx, topic)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot subscribe")
 		}
 
+		// create a backend goroutine receiving messages from topic then send to channel out.
 		go func() {
 			for msg := range msgs {
 				out <- msg

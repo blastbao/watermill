@@ -7,6 +7,7 @@ import (
 )
 
 type ErrCouldNotPublish struct {
+	// msg.uuid => error details
 	reasons map[string]error
 }
 
@@ -23,9 +24,11 @@ func (e ErrCouldNotPublish) Len() int {
 }
 
 func (e ErrCouldNotPublish) Error() string {
+
 	if len(e.reasons) == 0 {
 		return ""
 	}
+
 	b := strings.Builder{}
 	b.WriteString("Could not publish the messages:\n")
 	for uuid, reason := range e.reasons {

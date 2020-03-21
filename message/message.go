@@ -19,6 +19,7 @@ type Message struct {
 	// UUID is an unique identifier of message.
 	//
 	// It is only used by Watermill for debugging.
+	//
 	// UUID can be empty.
 	UUID string
 
@@ -87,7 +88,6 @@ func (m *Message) Equals(toCompare *Message) bool {
 	return bytes.Equal(m.Payload, toCompare.Payload)
 }
 
-
 // Ack sends message's acknowledgement.
 //
 // Ack is not blocking.
@@ -98,7 +98,6 @@ func (m *Message) Ack() bool {
 
 	m.ackMutex.Lock()
 	defer m.ackMutex.Unlock()
-
 
 	if m.ackSentType == nack {
 		return false
@@ -130,19 +129,15 @@ func (m *Message) Nack() bool {
 	m.ackMutex.Lock()
 	defer m.ackMutex.Unlock()
 
-
 	if m.ackSentType == ack {
 		return false
 	}
-
 
 	if m.ackSentType != noAckSent {
 		return true
 	}
 
-
 	m.ackSentType = nack
-
 
 	if m.noAck == nil {
 		m.noAck = closedchan
@@ -150,11 +145,8 @@ func (m *Message) Nack() bool {
 		close(m.noAck)
 	}
 
-
 	return true
 }
-
-
 
 // Acked returns channel which is closed when acknowledgement is sent.
 //

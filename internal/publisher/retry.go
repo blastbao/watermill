@@ -22,6 +22,7 @@ type RetryPublisherConfig struct {
 }
 
 func (c *RetryPublisherConfig) setDefaults() {
+
 	if c.MaxRetries == 0 {
 		c.MaxRetries = 5
 	}
@@ -33,12 +34,15 @@ func (c *RetryPublisherConfig) setDefaults() {
 	if c.Logger == nil {
 		c.Logger = watermill.NopLogger{}
 	}
+
 }
 
 func (c RetryPublisherConfig) validate() error {
+
 	if c.MaxRetries <= 0 {
 		return ErrNonPositiveNumberOfRetries
 	}
+
 	if c.TimeToFirstRetry <= 0 {
 		return ErrNonPositiveTimeToFirstRetry
 	}
@@ -65,11 +69,15 @@ func NewRetryPublisher(pub message.Publisher, config RetryPublisherConfig) (*Ret
 	}, nil
 }
 
+//
 func (p RetryPublisher) Publish(topic string, messages ...*message.Message) error {
+
+	// for saving the message failed
 	failedMessages := NewErrCouldNotPublish()
 
 	// todo: do some parallel processing maybe? this is a very basic implementation
 	for _, msg := range messages {
+
 		err := p.send(topic, msg)
 		if err != nil {
 			failedMessages.addMsg(msg, err)
@@ -93,11 +101,16 @@ func (p RetryPublisher) send(topic string, msg *message.Message) error {
 	timeToNextRetry := p.config.TimeToFirstRetry
 
 	for i := 0; i < p.config.MaxRetries; i++ {
+
+		// call pub.Publish() to send msg
 		err = p.pub.Publish(topic, msg)
+
+		// if send successfully, return nil directly
 		if err == nil {
 			return nil
 		}
 
+		// if send failed, log, sleep some time, adjust next sleep time, then retry
 		p.config.Logger.Info("Publish failed, retrying in "+timeToNextRetry.String(), watermill.LogFields{
 			"error": err,
 		})
