@@ -100,6 +100,7 @@ func (p RetryPublisher) send(topic string, msg *message.Message) error {
 	var err error
 	timeToNextRetry := p.config.TimeToFirstRetry
 
+	// retry send
 	for i := 0; i < p.config.MaxRetries; i++ {
 
 		// call pub.Publish() to send msg
@@ -114,7 +115,11 @@ func (p RetryPublisher) send(topic string, msg *message.Message) error {
 		p.config.Logger.Info("Publish failed, retrying in "+timeToNextRetry.String(), watermill.LogFields{
 			"error": err,
 		})
+
+		// sleep
 		time.Sleep(timeToNextRetry)
+
+		// expand sleep interval
 		timeToNextRetry *= 2
 	}
 	return err
