@@ -96,6 +96,7 @@ func (m *Message) Equals(toCompare *Message) bool {
 // False is returned, if Nack is already sent.
 func (m *Message) Ack() bool {
 
+
 	m.ackMutex.Lock()
 	defer m.ackMutex.Unlock()
 
@@ -159,7 +160,7 @@ func (m *Message) Nack() bool {
 //		}
 //
 //
-//
+// ACK indicates confirmation and the received data is correct
 func (m *Message) Acked() <-chan struct{} {
 	return m.ack
 }
@@ -173,6 +174,10 @@ func (m *Message) Acked() <-chan struct{} {
 //		case <-message.Nacked():
 //			// nack received
 //		}
+//
+//
+// NACK indicates that the received data is incorrect, such as wrong verification, wrong packet size, etc.,
+// and the host needs to retransmit the data.
 func (m *Message) Nacked() <-chan struct{} {
 	return m.noAck
 }

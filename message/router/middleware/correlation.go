@@ -9,13 +9,13 @@ const CorrelationIDMetadataKey = "correlation_id"
 // SetCorrelationID sets a correlation ID for the message.
 //
 // SetCorrelationID should be called when the message enters the system.
+//
 // When message is produced in a request (for example HTTP),
 // message correlation ID should be the same as the request's correlation ID.
 func SetCorrelationID(id string, msg *message.Message) {
 	if MessageCorrelationID(msg) != "" {
 		return
 	}
-
 	msg.Metadata.Set(CorrelationIDMetadataKey, id)
 }
 
@@ -31,12 +31,10 @@ func MessageCorrelationID(message *message.Message) string {
 func CorrelationID(h message.HandlerFunc) message.HandlerFunc {
 	return func(message *message.Message) ([]*message.Message, error) {
 		producedMessages, err := h(message)
-
 		correlationID := MessageCorrelationID(message)
 		for _, msg := range producedMessages {
 			SetCorrelationID(correlationID, msg)
 		}
-
 		return producedMessages, err
 	}
 }

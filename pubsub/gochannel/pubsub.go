@@ -2,14 +2,12 @@ package gochannel
 
 import (
 	"context"
+	"errors"
 	"sync"
-
-	"github.com/pkg/errors"
-
-	"github.com/lithammer/shortuuid/v3"
 
 	"github.com/blastbao/watermill"
 	"github.com/blastbao/watermill/message"
+	"github.com/lithammer/shortuuid"
 )
 
 type Config struct {
@@ -97,9 +95,11 @@ func (g *GoChannel) Publish(topic string, messages ...*message.Message) error {
 		messages[i] = msg.Copy()
 	}
 
+	// get subscriber lock
 	g.subscribersLock.RLock()
 	defer g.subscribersLock.RUnlock()
 
+	// get topic lock
 	subLock, _ := g.subscribersByTopicLock.LoadOrStore(topic, &sync.Mutex{})
 	subLock.(*sync.Mutex).Lock()
 	defer subLock.(*sync.Mutex).Unlock()
@@ -114,17 +114,22 @@ func (g *GoChannel) Publish(topic string, messages ...*message.Message) error {
 		g.persistedMessagesLock.Unlock()
 	}
 
+	// send each message to all subscribers of topic
 	for i := range messages {
+
 		msg := messages[i]
+
 		// start a backend goroutine sending msg to each subscriber
 		ackedBySubscribers, err := g.sendMessage(topic, msg)
 		if err != nil {
 			return err
 		}
-		// if `BlockPublishUntilSubscriberAck` is true, blocking until all subscriber receive current msg.
+
+		// if `BlockPublishUntilSubscriberAck` is true, blocking until all subscriber have received msg.
 		if g.config.BlockPublishUntilSubscriberAck {
 			g.waitForAckFromSubscribers(msg, ackedBySubscribers)
 		}
+
 	}
 
 	return nil
@@ -137,7 +142,7 @@ func (g *GoChannel) waitForAckFromSubscribers(msg *message.Message, ackedByConsu
 
 	select {
 	// waiting for the close signal from channel `ackedByConsumer`,
-	// which indicates that the message transmission has been completed.
+	// which indicates that the message has been send to each subscriber.
 	case <-ackedByConsumer:
 		g.logger.Trace("Message acked by subscribers", logFields)
 
@@ -154,10 +159,13 @@ func (g *GoChannel) sendMessage(topic string, message *message.Message) (<-chan 
 
 	logFields := watermill.LogFields{"message_uuid": message.UUID, "topic": topic}
 
-	// get subscribers of topic
+	// get all subscribers of topic
 	subscribers := g.topicSubscribers(topic)
+
+	// channel 'ackedBySubscribers' will be closed when msg have been send to every subscriber.
 	ackedBySubscribers := make(chan struct{})
 
+	// check if don't need send
 	if len(subscribers) == 0 {
 		close(ackedBySubscribers)
 		g.logger.Info("No subscribers to send message", logFields)
@@ -172,7 +180,7 @@ func (g *GoChannel) sendMessage(topic string, message *message.Message) (<-chan 
 			subscriber.sendMessageToSubscriber(message, logFields)
 		}
 
-		// when sending finished, close the result channel to notify caller
+		// when sending finished, close the 'ackedBySubscribers' channel to notify caller
 		close(ackedBySubscribers)
 
 	}(subscribers)
@@ -186,6 +194,7 @@ func (g *GoChannel) sendMessage(topic string, message *message.Message) (<-chan 
 // There are no consumer groups support etc. Every consumer will receive every produced message.
 func (g *GoChannel) Subscribe(ctx context.Context, topic string) (<-chan *message.Message, error) {
 
+	// check if g is closed
 	g.closedLock.Lock()
 	if g.closed {
 		return nil, errors.New("Pub/Sub closed")
@@ -193,11 +202,15 @@ func (g *GoChannel) Subscribe(ctx context.Context, topic string) (<-chan *messag
 	g.subscribersWg.Add(1)
 	g.closedLock.Unlock()
 
+	// get subscriber lock
 	g.subscribersLock.Lock()
 
+	// get topic lock
 	subLock, _ := g.subscribersByTopicLock.LoadOrStore(topic, &sync.Mutex{})
 	subLock.(*sync.Mutex).Lock()
 
+
+	// new a subscriber
 	s := &subscriber{
 		ctx:           ctx,
 		uuid:          watermill.NewUUID(),
@@ -206,7 +219,11 @@ func (g *GoChannel) Subscribe(ctx context.Context, topic string) (<-chan *messag
 		closing:       make(chan struct{}),
 	}
 
+
 	go func(s *subscriber, g *GoChannel) {
+
+
+		// 1. blocking until g is closed or ctx is time out.
 		select {
 		case <-ctx.Done():
 			// unblock
@@ -214,29 +231,38 @@ func (g *GoChannel) Subscribe(ctx context.Context, topic string) (<-chan *messag
 			// unblock
 		}
 
+		// 2. close s
 		s.Close()
 
+
+		// get subscriber lock
 		g.subscribersLock.Lock()
 		defer g.subscribersLock.Unlock()
 
+		// get topic lock
 		subLock, _ := g.subscribersByTopicLock.Load(topic)
 		subLock.(*sync.Mutex).Lock()
 		defer subLock.(*sync.Mutex).Unlock()
 
+		// 4. remove sub from g.subscribers[topic]
 		g.removeSubscriber(topic, s)
+
 		g.subscribersWg.Done()
+
 	}(s, g)
 
+
+	// if g.config.Persistent == false, call 'g.addSubscriber(topic, s)' add s to g.subscribers[topic] then return
 	if !g.config.Persistent {
 		defer g.subscribersLock.Unlock()
 		defer subLock.(*sync.Mutex).Unlock()
-
-		g.addSubscriber(topic, s)
-
+		g.addSubscriber(topic, s) // add s to g.subscribers[topic]
 		return s.outputChannel, nil
 	}
 
+	// else, g.config.Persistent == true, get the cached msg and send them to s, then call 'g.addSubscriber(topic, s)'
 	go func(s *subscriber) {
+
 		defer g.subscribersLock.Unlock()
 		defer subLock.(*sync.Mutex).Unlock()
 
@@ -256,9 +282,11 @@ func (g *GoChannel) Subscribe(ctx context.Context, topic string) (<-chan *messag
 		g.addSubscriber(topic, s)
 	}(s)
 
+	// attention, return the private member field 'outputChannel' of s to the caller.
 	return s.outputChannel, nil
 }
 
+// add sub to g.subscribers[topic]
 func (g *GoChannel) addSubscriber(topic string, s *subscriber) {
 	if _, ok := g.subscribers[topic]; !ok {
 		g.subscribers[topic] = make([]*subscriber, 0)
@@ -266,6 +294,7 @@ func (g *GoChannel) addSubscriber(topic string, s *subscriber) {
 	g.subscribers[topic] = append(g.subscribers[topic], s)
 }
 
+// remove sub from g.subscribers[topic]
 func (g *GoChannel) removeSubscriber(topic string, toRemove *subscriber) {
 	removed := false
 	for i, sub := range g.subscribers[topic] {
@@ -280,6 +309,7 @@ func (g *GoChannel) removeSubscriber(topic string, toRemove *subscriber) {
 	}
 }
 
+// get subs of topic
 func (g *GoChannel) topicSubscribers(topic string) []*subscriber {
 	subscribers, ok := g.subscribers[topic]
 	if !ok {
@@ -305,13 +335,20 @@ func (g *GoChannel) Close() error {
 		return nil
 	}
 
+	// set close flag to true
 	g.closed = true
+
+	// close notify channel
 	close(g.closing)
 
 	g.logger.Debug("Closing Pub/Sub, waiting for subscribers", nil)
+
+	// wait for all backend goroutine end worker
 	g.subscribersWg.Wait()
 
 	g.logger.Info("Pub/Sub closed", nil)
+
+	// clear memory-based cache
 	g.persistedMessages = nil
 
 	return nil
@@ -348,6 +385,7 @@ func (s *subscriber) Close() {
 	close(s.outputChannel)
 }
 
+//
 func (s *subscriber) sendMessageToSubscriber(msg *message.Message, logFields watermill.LogFields) {
 
 	s.sending.Lock()
@@ -367,11 +405,13 @@ SendToSubscriber:
 
 		s.logger.Trace("Sending msg to subscriber", logFields)
 
+		// check if closed
 		if s.closed {
 			s.logger.Info("Pub/Sub closed, discarding msg", logFields)
 			return
 		}
 
+		// send msg to outChan, creator of this subscriber will receive the msg, handle it, then send ACK/NACK.
 		select {
 		case s.outputChannel <- msgToSend:
 			s.logger.Trace("Sent message to subscriber", logFields)
@@ -380,10 +420,13 @@ SendToSubscriber:
 			return
 		}
 
+		// waiting for ack
 		select {
+		// if msg is acked, return
 		case <-msgToSend.Acked():
 			s.logger.Trace("Message acked", logFields)
 			return
+		// if msg is nacked, need retry sending
 		case <-msgToSend.Nacked():
 			s.logger.Trace("Nack received, resending message", logFields)
 			continue SendToSubscriber

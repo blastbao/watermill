@@ -40,6 +40,8 @@ func main() {
 	// Subscriber is created with consumer group handler_1
 	subscriber := createSubscriber("handler_1")
 
+
+
 	router, err := message.NewRouter(message.RouterConfig{}, logger)
 	if err != nil {
 		panic(err)

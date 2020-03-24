@@ -8,14 +8,18 @@ import (
 // MessageTransformSubscriberDecorator creates a subscriber decorator that calls transform
 // on each message that passes through the subscriber.
 func MessageTransformSubscriberDecorator(transform func(*Message)) SubscriberDecorator {
+
 	if transform == nil {
 		panic("transform function is nil")
 	}
+
 	return func(sub Subscriber) (Subscriber, error) {
+
 		return &messageTransformSubscriberDecorator{
 			sub:       sub,
 			transform: transform,
 		}, nil
+
 	}
 }
 
@@ -33,6 +37,8 @@ func MessageTransformPublisherDecorator(transform func(*Message)) PublisherDecor
 	}
 }
 
+
+
 type messageTransformSubscriberDecorator struct {
 	sub Subscriber
 
@@ -41,6 +47,7 @@ type messageTransformSubscriberDecorator struct {
 }
 
 func (t *messageTransformSubscriberDecorator) Subscribe(ctx context.Context, topic string) (<-chan *Message, error) {
+
 
 	in, err := t.sub.Subscribe(ctx, topic)
 	if err != nil {

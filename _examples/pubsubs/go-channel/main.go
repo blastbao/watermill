@@ -18,12 +18,19 @@ func main() {
 		watermill.NewStdLogger(false, false),
 	)
 
-	messages, err := pubSub.Subscribe(context.Background(), "example.topic")
+	messages1, err := pubSub.Subscribe(context.Background(), "example.topic")
 	if err != nil {
 		panic(err)
 	}
 
-	go process(messages)
+	go process(messages1)
+
+
+	messages2, err := pubSub.Subscribe(context.Background(), "example.topic")
+	if err != nil {
+		panic(err)
+	}
+	go process(messages2)
 
 	// build and publish messages at regular intervals
 	publishMessages(pubSub)

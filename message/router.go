@@ -32,21 +32,14 @@ var (
 type HandlerFunc func(msg *Message) ([]*Message, error)
 
 
-
-
-
 // NoPublishHandlerFunc is HandlerFunc alternative, which doesn't produce any messages.
 type NoPublishHandlerFunc func(msg *Message) error
-
-
-
 
 
 // PassthroughHandler is a handler that passes the message unchanged from the subscriber to the publisher.
 var PassthroughHandler HandlerFunc = func(msg *Message) ([]*Message, error) {
 	return []*Message{msg}, nil
 }
-
 
 
 // HandlerMiddleware allows us to write something like decorators to HandlerFunc.
@@ -91,8 +84,21 @@ func (c RouterConfig) Validate() error {
 	return nil
 }
 
+
+
+
+
+
+
+
+
+
 func NewRouter(config RouterConfig, logger watermill.LoggerAdapter) (*Router, error) {
+
+
 	config.setDefaults()
+
+
 	if err := config.Validate(); err != nil {
 		return nil, errors.Wrap(err, "invalid config")
 	}
@@ -308,13 +314,18 @@ func (r *Router) AddNoPublisherHandler(
 //
 // When all handlers are stopped (for example: because of closed connection), Run() will be also stopped.
 func (r *Router) Run(ctx context.Context) (err error) {
+
+
 	if r.isRunning {
 		return errors.New("router is already running")
 	}
+
+
 	r.isRunning = true
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
 
 	r.logger.Debug("Loading plugins", nil)
 	for _, plugin := range r.plugins {
@@ -323,7 +334,10 @@ func (r *Router) Run(ctx context.Context) (err error) {
 		}
 	}
 
+
 	r.logger.Debug("Applying decorators", nil)
+
+
 	for name, h := range r.handlers {
 		if err = r.decorateHandlerPublisher(h); err != nil {
 			return errors.Wrapf(err, "could not decorate publisher of handler %s", name)
@@ -332,6 +346,8 @@ func (r *Router) Run(ctx context.Context) (err error) {
 			return errors.Wrapf(err, "could not decorate subscriber of handler %s", name)
 		}
 	}
+
+
 
 	for _, h := range r.handlers {
 		r.logger.Debug("Subscribing to topic", watermill.LogFields{
@@ -346,6 +362,8 @@ func (r *Router) Run(ctx context.Context) (err error) {
 
 		h.messagesCh = messages
 	}
+
+
 
 	for i := range r.handlers {
 		handler := r.handlers[i]
@@ -363,9 +381,14 @@ func (r *Router) Run(ctx context.Context) (err error) {
 		}()
 	}
 
+
+
+
 	close(r.running)
 
+
 	go r.closeWhenAllHandlersStopped()
+
 
 	<-r.closeCh
 	cancel()

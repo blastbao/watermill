@@ -23,15 +23,13 @@ func NewIgnoreErrors(errs []error) IgnoreErrors {
 
 func (i IgnoreErrors) Middleware(h message.HandlerFunc) message.HandlerFunc {
 	return func(msg *message.Message) ([]*message.Message, error) {
-		events, err := h(msg)
+		msgs, err := h(msg)
 		if err != nil {
 			if _, ok := i.ignoredErrors[errors.Cause(err).Error()]; ok {
-				return events, nil
+				return msgs, nil
 			}
-
-			return events, err
+			return msgs, err
 		}
-
-		return events, nil
+		return msgs, nil
 	}
 }

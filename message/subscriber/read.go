@@ -14,7 +14,7 @@ MessagesLoop:
 		select {
 		case msg, ok := <-messagesCh:
 
-			// if channel is closed, then break out for loop and return
+			// if channel is closed, break out and return
 			if !ok {
 				break MessagesLoop
 			}
